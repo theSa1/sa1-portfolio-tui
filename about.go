@@ -1,23 +1,50 @@
 package main
 
 import (
-	"strconv"
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
 )
 
-type skill struct {
-	name    string
-	percent int
+type Tool struct {
+	Name string
+	URL  string
 }
 
-var skills1 = []skill{
-	{"HTML", 90},
-	{"CSS", 80},
-	{"JavaScript", 70},
-	{"Python", 60},
-	{"Go", 50},
+type Section struct {
+	Title string
+	Tools []Tool
+}
+
+var toolsList = []Section{
+	{
+		Title: "Languages",
+		Tools: []Tool{
+			{Name: "Go", URL: "https://go.dev"},
+			{Name: "JavaScript", URL: "https://developer.mozilla.org/en-US/docs/Web/JavaScript"},
+			{Name: "TypeScript", URL: "https://www.typescriptlang.org"},
+			{Name: "Python", URL: "https://www.python.org"},
+		},
+	},
+	{
+		Title: "Frameworks & Libraries",
+		Tools: []Tool{
+			{Name: "Node.js", URL: "https://nodejs.org"},
+			{Name: "React", URL: "https://reactjs.org"},
+			{Name: "Next.js", URL: "https://nextjs.org"},
+			{Name: "Tailwind CSS", URL: "https://tailwindcss.com"},
+		},
+	},
+	{
+		Title: "Tools & Platforms",
+		Tools: []Tool{
+			{Name: "Git", URL: "https://git-scm.com"},
+			{Name: "GitHub", URL: "https://github.com"},
+			{Name: "Docker", URL: "https://www.docker.com"},
+			{Name: "Kubernetes", URL: "https://kubernetes.io"},
+			{Name: "AWS", URL: "https://aws.amazon.com"},
+		},
+	},
 }
 
 func getAboutView(m Model, width, height int) string {
@@ -31,67 +58,28 @@ func getAboutView(m Model, width, height int) string {
 	usableHeight := height - 2
 	usableWidth := width - 6
 
-	skillsSectionWidth := (usableWidth - 3) / 2
-
-	skillsSection1 := boldStyle.Render("## Languages & Frameworks") + "\n\n"
-	for i, skill := range skills1 {
-		emptyProgressChar := lipgloss.NewStyle().Background(lipgloss.Color("240")).Render(" ")
-		filledProgressChar := lipgloss.NewStyle().Background(lipgloss.Color("205")).Render(" ")
-		progressBar := strings.Repeat(filledProgressChar, skill.percent/10) + strings.Repeat(emptyProgressChar, 10-skill.percent/10)
-		skillsSection1 += lipgloss.NewStyle().
-			Render("- " + skill.name + " " + progressBar + " " + strconv.Itoa(skill.percent) + "%")
-		if i < len(skills1)-1 {
-			skillsSection1 += "\n\n"
-		}
-	}
-
-	skillsSection2 := boldStyle.Render("## Tools & Platforms") + "\n\n"
-	for i, skill := range skills1 {
-		emptyProgressChar := lipgloss.NewStyle().Background(lipgloss.Color("240")).Render(" ")
-		filledProgressChar := lipgloss.NewStyle().Background(lipgloss.Color("205")).Render(" ")
-		progressBar := strings.Repeat(filledProgressChar, skill.percent/10) + strings.Repeat(emptyProgressChar, 10-skill.percent/10)
-		skillsSection2 += lipgloss.NewStyle().
-			Render("- " + skill.name + " " + progressBar + " " + strconv.Itoa(skill.percent) + "%")
-		if i < len(skills1)-1 {
-			skillsSection2 += "\n\n"
-		}
-	}
-
-	skillsSectionHeight := max(lipgloss.Height(skillsSection1), lipgloss.Height(skillsSection2))
-	separator := lipgloss.NewStyle().
-		Width(usableWidth - (skillsSectionWidth * 2)).
-		Align(lipgloss.Center).
-		Render(strings.Repeat("│\n", skillsSectionHeight))
-
-	skillsSectionsStyle := lipgloss.NewStyle().
-		Width(skillsSectionWidth)
-
-	skillsSection := lipgloss.JoinHorizontal(
-		lipgloss.Left,
-		skillsSectionsStyle.Render(skillsSection1),
-		separator,
-		skillsSectionsStyle.Render(skillsSection2),
-	)
-
 	aboutText := boldStyle.Render("# About Me") + `
 
-I'm a web developer/programmer who likes to build websites and services as a passion.
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec at lectus a tellus sollicitudin vulputate. Aenean non quam porta, consectetur lacus quis, porttitor nisi. Quisque eget ipsum elit. Cras et pharetra tortor. Etiam iaculis enim cursus tempor fringilla. Vestibulum vitae cursus est. Vivamus ut mauris accumsan, laoreet mi porta, vulputate ante.
 
-I live in a small village in Gujarat India, my age is only 15 but I don't let that be a problem for me, I have built several websites, and although they are far from perfect but as a 15 y/o I'm proud of that achievement.
+Ut tincidunt sapien dictum, finibus sem vitae, pretium ipsum. Sed massa mi, lobortis ut ligula eget, tempor viverra neque. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Donec a lectus eleifend, pulvinar tellus id, mattis nunc. Integer fermentum in metus id fringilla. Integer sed diam leo. Donec eu magna id purus commodo congue eget ac dolor. Sed vitae risus enim. Nam a ex vitae nisl accumsan gravida. Proin scelerisque suscipit turpis, quis facilisis erat varius nec. Morbi rhoncus nisl sit amet consequat mollis. Proin non egestas leo.`
 
-I want to explore deep into web/app development and expand my skill set I am also exploring all the technologies for development, that way I can ship my apps to more sets of devices.
+	var toolsSections []string
 
-My goal is to convert this passion of mine to a profession and create apps/websites that add value to people's lives.
+	var toolStyle = lipgloss.NewStyle().
+		Border(lipgloss.RoundedBorder()).
+		Padding(0, 1).MarginRight(1)
 
-I'm a web developer/programmer who likes to build websites and services as a passion.
+	for _, section := range toolsList {
+		var tools []string
+		for _, tool := range section.Tools {
+			tools = append(tools, toolStyle.Render(createHyperlink(tool.URL, tool.Name)))
+		}
+		toolsSections = append(toolsSections, "## "+section.Title+"\n"+lipgloss.JoinHorizontal(lipgloss.Left, tools...)+"\n")
+	}
 
-I live in a small village in Gujarat India, my age is only 15 but I don't let that be a problem for me, I have built several websites, and although they are far from perfect but as a 15 y/o I'm proud of that achievement.
-
-I want to explore deep into web/app development and expand my skill set I am also exploring all the technologies for development, that way I can ship my apps to more sets of devices.
-
-My goal is to convert this passion of mine to a profession and create apps/websites that add value to people's lives.`
-
-	aboutText += "\n\n" + skillsSection
+	aboutText += "\n\n\n" + boldStyle.Render("# Tools & Technologies") + "\n\n" +
+		lipgloss.JoinVertical(lipgloss.Left, toolsSections...)
 
 	aboutContent := lipgloss.NewStyle().
 		Width(usableWidth).

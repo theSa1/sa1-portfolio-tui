@@ -27,7 +27,7 @@ func (m Model) View() string {
 		Width(width - 2).
 		Height(1).
 		Align(lipgloss.Center).
-		Render("Press 'q' to quit | Use arrow keys to navigate frame: " + fmt.Sprint(m.frame))
+		Render("Press 'q' to quit | Use arrow keys to navigate")
 
 	width -= 2
 	height = height - lipgloss.Height(header) - lipgloss.Height(footer) - 2

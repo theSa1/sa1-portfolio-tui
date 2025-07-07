@@ -8,14 +8,14 @@ import (
 
 const toWrite = "Sa1 | Portfolio"
 
-func typeWriterAnimation(frame int, text string, totalFrames int) string {
+func typeWriterAnimation(m Model, text string, totalFrames int) string {
 	textLength := len(text)
 	framesPerChar := totalFrames / textLength
-	toShowTextLength := frame / framesPerChar
+	toShowTextLength := m.frame / framesPerChar
 	if toShowTextLength < textLength {
-		return text[:toShowTextLength+1] + blinkingCursor(frame, false) + strings.Repeat(" ", textLength-toShowTextLength-1)
+		return text[:toShowTextLength+1] + blinkingCursor(m.frame, false, m) + strings.Repeat(" ", textLength-toShowTextLength-1)
 	}
-	return text + blinkingCursor(frame, true)
+	return text + blinkingCursor(m.frame, true, m)
 }
 
 func getSplashScreen(m Model, width, height int) string {
@@ -26,7 +26,7 @@ func getSplashScreen(m Model, width, height int) string {
 		Width(width).
 		Height(height)
 
-	splashContent := typeWriterAnimation(m.frame, toWrite, 30)
+	splashContent := typeWriterAnimation(m, toWrite, 30)
 
 	// if (m.frame/10)%2 == 0 {
 	// 	splashContent += lipgloss.NewStyle().

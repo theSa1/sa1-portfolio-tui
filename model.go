@@ -7,7 +7,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-const SPLASH_SCREEN_FRAME_COUNT = 0
+const SPLASH_SCREEN_FRAME_COUNT = 80
 
 var borders = []lipgloss.Border{
 	lipgloss.RoundedBorder(),
@@ -61,20 +61,6 @@ func tick() tea.Cmd {
 	return tea.Tick(50*time.Millisecond, func(t time.Time) tea.Msg {
 		return tickMsg(t)
 	})
-}
-
-func NewModel() Model {
-	return Model{
-		currentView: splashView,
-		theme: Theme{
-			background:      lipgloss.Color("240"),
-			foreground:      lipgloss.Color("255"),
-			foregroundMuted: lipgloss.Color("244"),
-			primary:         lipgloss.Color("205"),
-			secondary:       lipgloss.Color("45"),
-			border:          borders[currentBorder],
-		},
-	}
 }
 
 func (m Model) Init() tea.Cmd {
