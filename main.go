@@ -20,9 +20,15 @@ import (
 )
 
 const (
-	host = "localhost"
-	port = "23234"
+	host = "0.0.0.0"
 )
+
+var port = func() string {
+	if p := os.Getenv("PORT"); p != "" {
+		return p
+	}
+	return "23234"
+}()
 
 func main() {
 	// m := NewModel()
