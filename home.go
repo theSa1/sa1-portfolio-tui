@@ -5,7 +5,7 @@ import (
 )
 
 func getHomeView(m Model, width, height int) string {
-	homeStyle := lipgloss.NewStyle().
+	homeStyle := m.renderer.NewStyle().
 		Width(width).
 		Height(height)
 
@@ -19,7 +19,7 @@ func getHomeView(m Model, width, height int) string {
 Inspired by ` + createHyperlink("https://terminal.shop", "terminal.shop") + `
 Go to ` + createHyperlink("https://sa1.dev", "sa1.dev") + ` for web version`
 
-	homeContent := lipgloss.NewStyle().
+	homeContent := m.renderer.NewStyle().
 		Width(width - 6).
 		Height(lipgloss.Height(heroText)).
 		Align(lipgloss.Center).

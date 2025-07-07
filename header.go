@@ -5,11 +5,11 @@ import (
 )
 
 func getHeader(m Model, width int) string {
-	logo := lipgloss.NewStyle().
+	logo := m.renderer.NewStyle().
 		Padding(0, 3, 0, 1).
 		Render("Sa1 | Portfolio" + blinkingCursor(m.frame, true, m))
 
-	navBarStyle := lipgloss.NewStyle().
+	navBarStyle := m.renderer.NewStyle().
 		Width(width - lipgloss.Width(logo)).
 		Align(lipgloss.Right)
 
@@ -18,7 +18,7 @@ func getHeader(m Model, width int) string {
 	for i, item := range navItems {
 		switch m.currentView {
 		case uint(i) + 1:
-			navItems[i] = lipgloss.NewStyle().
+			navItems[i] = m.renderer.NewStyle().
 				Foreground(m.theme.foreground).
 				Background(m.theme.primary).
 				Bold(true).
@@ -26,7 +26,7 @@ func getHeader(m Model, width int) string {
 				MarginRight(1).
 				Render(item)
 		default:
-			navItems[i] = lipgloss.NewStyle().
+			navItems[i] = m.renderer.NewStyle().
 				Foreground(m.theme.foreground).
 				Padding(0, 2).
 				MarginRight(1).

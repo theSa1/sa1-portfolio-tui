@@ -12,7 +12,7 @@ type Project struct {
 }
 
 func getProjectsView(m Model, width, height int) string {
-	projectsStyle := lipgloss.NewStyle().
+	projectsStyle := m.renderer.NewStyle().
 		Width(width).
 		Height(height)
 
@@ -21,6 +21,6 @@ func getProjectsView(m Model, width, height int) string {
 	return projectsStyle.Render(lipgloss.Place(
 		width, height,
 		lipgloss.Center, lipgloss.Center,
-		lipgloss.NewStyle().Render(projectsContent),
+		m.renderer.NewStyle().Render(projectsContent),
 	))
 }

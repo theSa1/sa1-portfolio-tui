@@ -1,9 +1,7 @@
 package main
 
-import "github.com/charmbracelet/lipgloss"
-
 func blinkingCursor(frame int, blinking bool, m Model) string {
-	style := lipgloss.NewStyle().Bold(true)
+	style := m.renderer.NewStyle().Bold(true)
 	if !blinking || (blinking && (frame/10)%2 == 0) {
 		style = style.Background(m.theme.primary)
 	}

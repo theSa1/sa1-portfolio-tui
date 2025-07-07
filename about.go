@@ -48,11 +48,11 @@ var toolsList = []Section{
 }
 
 func getAboutView(m Model, width, height int) string {
-	aboutStyle := lipgloss.NewStyle().
+	aboutStyle := m.renderer.NewStyle().
 		Width(width).
 		Height(height)
 
-	boldStyle := lipgloss.NewStyle().
+	boldStyle := m.renderer.NewStyle().
 		Bold(true)
 
 	usableHeight := height - 2
@@ -66,7 +66,7 @@ Ut tincidunt sapien dictum, finibus sem vitae, pretium ipsum. Sed massa mi, lobo
 
 	var toolsSections []string
 
-	var toolStyle = lipgloss.NewStyle().
+	var toolStyle = m.renderer.NewStyle().
 		Border(lipgloss.RoundedBorder()).
 		Padding(0, 1).MarginRight(1)
 
@@ -81,7 +81,7 @@ Ut tincidunt sapien dictum, finibus sem vitae, pretium ipsum. Sed massa mi, lobo
 	aboutText += "\n\n\n" + boldStyle.Render("# Tools & Technologies") + "\n\n" +
 		lipgloss.JoinVertical(lipgloss.Left, toolsSections...)
 
-	aboutContent := lipgloss.NewStyle().
+	aboutContent := m.renderer.NewStyle().
 		Width(usableWidth).
 		Height(usableHeight).
 		Render(aboutText)
@@ -96,12 +96,12 @@ Ut tincidunt sapien dictum, finibus sem vitae, pretium ipsum. Sed massa mi, lobo
 		aboutContent = strings.Join(aboutContentLines[startLine:endLine], "\n")
 	}
 
-	topStyle := lipgloss.NewStyle().
+	topStyle := m.renderer.NewStyle().
 		Width(usableWidth).
 		Height(1).
 		Align(lipgloss.Center)
 
-	bottomStyle := lipgloss.NewStyle().
+	bottomStyle := m.renderer.NewStyle().
 		Width(usableWidth).
 		Height(1).
 		Align(lipgloss.Center)

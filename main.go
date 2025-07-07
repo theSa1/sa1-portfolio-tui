@@ -10,13 +10,13 @@ import (
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
 	"github.com/charmbracelet/ssh"
 	"github.com/charmbracelet/wish"
 	"github.com/charmbracelet/wish/activeterm"
 	"github.com/charmbracelet/wish/bubbletea"
 	"github.com/charmbracelet/wish/logging"
+	"github.com/charmbracelet/wish/recover"
 )
 
 const (
@@ -41,9 +41,11 @@ func main() {
 		wish.WithAddress(net.JoinHostPort(host, port)),
 		wish.WithHostKeyPath(".ssh/id_ed25519"),
 		wish.WithMiddleware(
-			bubbletea.Middleware(teaHandler),
-			activeterm.Middleware(), // Bubble Tea apps usually require a PTY.
-			logging.Middleware(),
+			recover.Middleware(
+				bubbletea.Middleware(teaHandler),
+				activeterm.Middleware(),
+				logging.Middleware(),
+			),
 		),
 	)
 
@@ -71,17 +73,9 @@ func main() {
 }
 
 func teaHandler(s ssh.Session) (tea.Model, []tea.ProgramOption) {
+	renderer := bubbletea.MakeRenderer(s)
 
-	m := Model{
-		currentView: splashView,
-		theme: Theme{
-			foreground:      lipgloss.Color("255"),
-			foregroundMuted: lipgloss.Color("244"),
-			primary:         lipgloss.Color("#FF5C00"),
-			secondary:       lipgloss.Color("45"),
-			border:          borders[currentBorder],
-		},
-	}
+	m := NewModel(renderer)
 
 	return m, []tea.ProgramOption{tea.WithAltScreen()}
 }

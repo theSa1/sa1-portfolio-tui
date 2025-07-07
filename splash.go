@@ -22,19 +22,19 @@ func getSplashScreen(m Model, width, height int) string {
 	if width < 2 || height < 2 {
 		return "Invalid dimensions for splash screen"
 	}
-	splashStyle := lipgloss.NewStyle().
+	splashStyle := m.renderer.NewStyle().
 		Width(width).
 		Height(height)
 
 	splashContent := typeWriterAnimation(m, toWrite, 30)
 
 	// if (m.frame/10)%2 == 0 {
-	// 	splashContent += lipgloss.NewStyle().
+	// 	splashContent += m.renderer.NewStyle().
 	// 		Background(lipgloss.Color("240")).
 	// 		Bold(true).
 	// 		Render(" ")
 	// } else {
-	// 	splashContent += lipgloss.NewStyle().
+	// 	splashContent += m.renderer.NewStyle().
 	// 		Bold(true).
 	// 		Render(" ")
 	// }

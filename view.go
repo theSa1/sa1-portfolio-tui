@@ -23,7 +23,7 @@ func (m Model) View() string {
 
 	header := getHeader(m, width)
 
-	footer := lipgloss.NewStyle().
+	footer := m.renderer.NewStyle().
 		Width(width - 2).
 		Height(1).
 		Align(lipgloss.Center).
@@ -32,7 +32,7 @@ func (m Model) View() string {
 	width -= 2
 	height = height - lipgloss.Height(header) - lipgloss.Height(footer) - 2
 
-	contentStyle := lipgloss.NewStyle().
+	contentStyle := m.renderer.NewStyle().
 		Width(width).
 		Height(height).
 		Align(lipgloss.Center).
