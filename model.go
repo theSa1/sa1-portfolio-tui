@@ -7,7 +7,8 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-const SPLASH_SCREEN_FRAME_COUNT = 80
+// const SPLASH_SCREEN_FRAME_COUNT = 80
+const SPLASH_SCREEN_FRAME_COUNT = 0
 
 var borders = []lipgloss.Border{
 	lipgloss.RoundedBorder(),
@@ -109,11 +110,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.scrollOffset = 0
 			}
 		case "up":
-			if m.currentView == aboutView && m.scrollOffset > 0 {
+			if (m.currentView == aboutView || m.currentView == projectsView) && m.scrollOffset > 0 {
 				m.scrollOffset--
 			}
 		case "down":
-			if m.currentView == aboutView && m.scrollOffset < scrollViewTotalLines-scrollViewUsableHeight {
+			if (m.currentView == aboutView || m.currentView == projectsView) && m.scrollOffset < scrollViewTotalLines-scrollViewUsableHeight {
 				m.scrollOffset++
 			}
 		case "b":

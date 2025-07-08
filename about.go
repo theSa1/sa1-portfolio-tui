@@ -53,6 +53,7 @@ func getAboutView(m Model, width, height int) string {
 		Height(height)
 
 	boldStyle := m.renderer.NewStyle().
+		Foreground(m.theme.primary).
 		Bold(true)
 
 	usableHeight := height - 2
@@ -75,7 +76,7 @@ Ut tincidunt sapien dictum, finibus sem vitae, pretium ipsum. Sed massa mi, lobo
 		for _, tool := range section.Tools {
 			tools = append(tools, toolStyle.Render(createHyperlink(tool.URL, tool.Name)))
 		}
-		toolsSections = append(toolsSections, "## "+section.Title+"\n"+lipgloss.JoinHorizontal(lipgloss.Left, tools...)+"\n")
+		toolsSections = append(toolsSections, "## "+section.Title+"\n"+wrapAndJoin(tools, usableWidth)+"\n")
 	}
 
 	aboutText += "\n\n\n" + boldStyle.Render("# Tools & Technologies") + "\n\n" +
