@@ -7,8 +7,9 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-// const SPLASH_SCREEN_FRAME_COUNT = 80
-const SPLASH_SCREEN_FRAME_COUNT = 0
+const SPLASH_SCREEN_FRAME_COUNT = 80
+
+// const SPLASH_SCREEN_FRAME_COUNT = 0
 
 var borders = []lipgloss.Border{
 	lipgloss.RoundedBorder(),
