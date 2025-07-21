@@ -47,7 +47,7 @@ func (m Model) View() string {
 	case projectsView:
 		content = contentStyle.Render(getProjectsView(m, width, height))
 	case contactView:
-		content = contentStyle.Render("Contact view is under construction.")
+		content = contentStyle.Render(getContactView(m, width, height))
 	default:
 		content = contentStyle.Render(fmt.Sprintf("Current View: %d", m.currentView))
 	}

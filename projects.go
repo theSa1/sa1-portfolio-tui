@@ -25,6 +25,11 @@ var projects = []Project{{
 
 func getProjectsView(m Model, width, height int) string {
 	boldStyle := m.renderer.NewStyle().
+		Foreground(m.theme.primary).
+		Bold(true)
+
+	boldNonePrimary := m.renderer.NewStyle().
+		Foreground(m.theme.foreground).
 		Bold(true)
 
 	projectsStyle := m.renderer.NewStyle().
@@ -53,11 +58,11 @@ func getProjectsView(m Model, width, height int) string {
 			Render("" + p.description + "\n" + wrapAndJoin(toolsText, usableWidth-3))
 		projectContainer := m.renderer.NewStyle().
 			Width(usableWidth).
-			Render(boldStyle.Render("## "+p.name) + "\n" + projectText)
+			Render(boldNonePrimary.Render("## "+p.name) + "\n\n" + projectText)
 
 		projectsText += projectContainer
 		if i < len(projects)-1 {
-			projectsText += "\n\n"
+			projectsText += "\n\n\n"
 		}
 	}
 
