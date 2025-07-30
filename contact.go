@@ -7,8 +7,6 @@ func getContactView(m Model, width, height int) string {
 		Foreground(m.theme.primary).
 		Bold(true)
 
-	width -= 6
-	height -= 1
 	// Contact form
 	content := boldStyle.Render("# Contact Me") + "\n\n"
 

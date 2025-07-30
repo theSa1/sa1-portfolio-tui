@@ -160,8 +160,15 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, tick()
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "q", "ctrl+c":
+		case "ctrl+c":
 			return m, tea.Quit
+		case "q":
+			if m.currentView != contactView {
+				return m, tea.Quit
+			}
+			if !m.nameInput.Focused() && !m.emailInput.Focused() && !m.messageInput.Focused() {
+				return m, tea.Quit
+			}
 		case "right":
 			if m.currentView < contactView {
 				m.currentView++
