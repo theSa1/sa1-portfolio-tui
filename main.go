@@ -34,7 +34,7 @@ var port = func() string {
 func main() {
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Debug("No .env file found, using default environment variables")
 	}
 
 	s, err := wish.NewServer(
