@@ -1,6 +1,12 @@
 package main
 
-import "github.com/charmbracelet/lipgloss"
+import (
+	"net/smtp"
+	"os"
+	"regexp"
+
+	"github.com/charmbracelet/lipgloss"
+)
 
 func blinkingCursor(frame int, blinking bool, m Model) string {
 	style := m.renderer.NewStyle().Bold(true)
@@ -38,4 +44,25 @@ func wrapAndJoin(lines []string, width int) string {
 	}
 
 	return lipgloss.JoinVertical(lipgloss.Left, wrappedLines...)
+}
+
+var emailRegex = regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
+
+func isValidEmail(email string) bool {
+	// Validate email using regex
+	return emailRegex.MatchString(email)
+}
+
+func submitForm(email string, name string, message string) bool {
+	if !isValidEmail(email) {
+		return false
+	}
+
+	from := os.Getenv("SMTP_USERNAME")
+	to := os.Getenv("SMTP_EMAIL_TO")
+	body := "A message from the terminal portfolio\n\nName: " + name + "\nEmail: " + email + "\nMessage:\n---------------------------\n" + message
+	auth := smtp.PlainAuth("", from, os.Getenv("SMTP_PASSWORD"), os.Getenv("SMTP_HOST"))
+	err := smtp.SendMail("smtp.gmail.com:587", auth, from, []string{to}, []byte("Subject: Contact Form Submission\n\n"+body))
+
+	return err == nil
 }

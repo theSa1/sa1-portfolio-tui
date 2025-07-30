@@ -68,6 +68,7 @@ type Model struct {
 	isSubmitFocused bool
 	isSubmitting    bool
 	isSubmitted     bool
+	contactMessage  string
 }
 
 type tickMsg time.Time
@@ -89,9 +90,10 @@ func NewModel(renderer *lipgloss.Renderer) Model {
 			secondary:       lipgloss.Color("45"),
 			border:          borders[currentBorder],
 		},
-		nameInput:    textinput.New(),
-		emailInput:   textinput.New(),
-		messageInput: textarea.New(),
+		nameInput:      textinput.New(),
+		emailInput:     textinput.New(),
+		messageInput:   textarea.New(),
+		contactMessage: "",
 	}
 
 	model.nameInput.Placeholder = "Your Name"
@@ -195,11 +197,28 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "enter":
 			if m.currentView == contactView {
 				if (!m.isSubmitting || m.isSubmitted) && m.isSubmitFocused {
-					m.isSubmitting = true
+					m.contactMessage = ""
 					m.isSubmitted = false
-					m.nameInput.SetValue("")
-					m.emailInput.SetValue("")
-					m.messageInput.SetValue("")
+					name := m.nameInput.Value()
+					email := m.emailInput.Value()
+					message := m.messageInput.Value()
+
+					if len(name) < 1 || len(email) < 1 || len(message) < 1 {
+						m.contactMessage = "Please fill all fields"
+					} else if !isValidEmail(email) {
+						m.contactMessage = "Please enter a valid email"
+					} else {
+						isSuccess := submitForm(email, name, message)
+						if isSuccess {
+							m.contactMessage = "Message sent successfully"
+						} else {
+							m.contactMessage = "Something went wrong"
+						}
+						m.isSubmitted = true
+						m.nameInput.SetValue("")
+						m.emailInput.SetValue("")
+						m.messageInput.SetValue("")
+					}
 				}
 			}
 		case "up":

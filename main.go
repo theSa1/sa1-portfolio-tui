@@ -17,6 +17,7 @@ import (
 	"github.com/charmbracelet/wish/bubbletea"
 	"github.com/charmbracelet/wish/logging"
 	"github.com/charmbracelet/wish/recover"
+	"github.com/joho/godotenv"
 )
 
 const (
@@ -31,11 +32,10 @@ var port = func() string {
 }()
 
 func main() {
-	// m := NewModel()
-	// p := tea.NewProgram(m, tea.WithAltScreen())
-	// if _, err := p.Run(); err != nil {
-	// 	log.Fatalf("Unable to launch the tui: %v", err)
-	// }
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 
 	s, err := wish.NewServer(
 		wish.WithAddress(net.JoinHostPort(host, port)),

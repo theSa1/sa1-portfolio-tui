@@ -20,17 +20,19 @@ func getContactView(m Model, width, height int) string {
 	content += "Message:\n" + m.messageInput.View() + "\n\n"
 
 	if m.isSubmitFocused {
-		content += lipgloss.NewStyle().
+		content += m.renderer.NewStyle().
 			Foreground(m.theme.background).
 			Background(m.theme.primary).
 			Bold(true).
 			Render(" > Submit ")
 	} else {
-		content += lipgloss.NewStyle().
+		content += m.renderer.NewStyle().
 			Foreground(m.theme.primary).
 			Bold(true).
 			Render("   Submit ")
 	}
+
+	content += " " + m.contactMessage
 
 	content += "\n\nUse Tab to navigate."
 
