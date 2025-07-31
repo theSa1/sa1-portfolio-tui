@@ -1,40 +1,25 @@
 package main
 
-import "github.com/charmbracelet/lipgloss"
+import (
+	"github.com/charmbracelet/huh"
+	"github.com/charmbracelet/lipgloss"
+)
 
 func getContactView(m Model, width, height int) string {
 	boldStyle := m.renderer.NewStyle().
 		Foreground(m.theme.primary).
 		Bold(true)
 
-	// Contact form
 	content := boldStyle.Render("# Contact Me") + "\n\n"
 
-	// Add all three input fields with proper spacing
-	sectionWidth := (width - 2) / 2
-	nameField := lipgloss.NewStyle().Width(sectionWidth).Height(2).Render("Name:\n" + m.nameInput.View())
-	emailField := lipgloss.NewStyle().Width(sectionWidth).Height(2).Render("Email:\n" + m.emailInput.View())
-	content += lipgloss.JoinHorizontal(lipgloss.Left, nameField, "  ", emailField) + "\n\n"
-	content += "Message:\n" + m.messageInput.View() + "\n\n"
-
-	if m.isSubmitFocused {
-		content += m.renderer.NewStyle().
-			Foreground(m.theme.background).
-			Background(m.theme.primary).
-			Bold(true).
-			Render(" > Submit ")
+	if m.contactForm.State == huh.StateCompleted {
+		content += m.renderer.Place(width, 11, lipgloss.Center, lipgloss.Center, "Thank you for your message! I will get back to you soon.")
 	} else {
-		content += m.renderer.NewStyle().
-			Foreground(m.theme.primary).
-			Bold(true).
-			Render("   Submit ")
+		content += m.contactForm.WithWidth(width - 10).WithHeight(12).View()
 	}
-
-	content += " " + m.contactMessage
-
 	content += "\n\nUse Tab to navigate."
 
-	content += "\n\n" + createHyperlink("https://github.com/thesa1", "GitHub") + " | " +
+	content += "\n" + createHyperlink("https://github.com/thesa1", "GitHub") + " | " +
 		createHyperlink("https://x.com/sa1wastooshort", "X") + " | " +
 		createHyperlink("http://linkedin.com/in/savan-bhanderi", "LinkedIn") + " | " +
 		createHyperlink("https://sa1.dev", "sa1.dev")

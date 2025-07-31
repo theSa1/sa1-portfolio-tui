@@ -1,29 +1,18 @@
 package main
 
 import (
+	"errors"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 
-	"github.com/charmbracelet/bubbles/textarea"
-	"github.com/charmbracelet/bubbles/textinput"
+	"github.com/charmbracelet/huh"
 )
 
 const SPLASH_SCREEN_FRAME_COUNT = 80
 
 // const SPLASH_SCREEN_FRAME_COUNT = 0
-
-var borders = []lipgloss.Border{
-	lipgloss.RoundedBorder(),
-	lipgloss.DoubleBorder(),
-	lipgloss.NormalBorder(),
-	lipgloss.ASCIIBorder(),
-	lipgloss.ThickBorder(),
-	lipgloss.MarkdownBorder(),
-	lipgloss.HiddenBorder(),
-}
-var currentBorder = 0
 
 var scrollViewTotalLines = 0
 var scrollViewUsableHeight = 0
@@ -37,13 +26,10 @@ const (
 )
 
 type Theme struct {
-	background      lipgloss.Color
 	foreground      lipgloss.Color
 	foregroundMuted lipgloss.Color
 	primary         lipgloss.Color
 	secondary       lipgloss.Color
-
-	border lipgloss.Border
 }
 
 type Model struct {
@@ -55,20 +41,12 @@ type Model struct {
 	height      int
 	width       int
 
-	// for animations
 	frame int
 
-	// theme
 	theme Theme
 
-	// text input
-	nameInput       textinput.Model
-	emailInput      textinput.Model
-	messageInput    textarea.Model
-	isSubmitFocused bool
-	isSubmitting    bool
-	isSubmitted     bool
-	contactMessage  string
+	contactForm     *huh.Form
+	isFormSubmitted bool
 }
 
 type tickMsg time.Time
@@ -77,6 +55,72 @@ func tick() tea.Cmd {
 	return tea.Tick(50*time.Millisecond, func(t time.Time) tea.Msg {
 		return tickMsg(t)
 	})
+}
+
+// Stolen from terminal.shop
+func copyTextStyles(t huh.TextInputStyles) huh.TextInputStyles {
+	return huh.TextInputStyles{
+		Cursor:      t.Cursor.Copy(),
+		Placeholder: t.Placeholder.Copy(),
+		Prompt:      t.Prompt.Copy(),
+		Text:        t.Text.Copy(),
+	}
+}
+
+func copyFieldStyles(f huh.FieldStyles) huh.FieldStyles {
+	return huh.FieldStyles{
+		Base:           f.Base.Copy(),
+		Title:          f.Title.Copy(),
+		Description:    f.Description.Copy(),
+		ErrorIndicator: f.ErrorIndicator.Copy(),
+		ErrorMessage:   f.ErrorMessage.Copy(),
+		SelectSelector: f.SelectSelector.Copy(),
+		// NextIndicator:       f.NextIndicator.Copy(),
+		// PrevIndicator:       f.PrevIndicator.Copy(),
+		Option: f.Option.Copy(),
+		// Directory:           f.Directory.Copy(),
+		// File:                f.File.Copy(),
+		MultiSelectSelector: f.MultiSelectSelector.Copy(),
+		SelectedOption:      f.SelectedOption.Copy(),
+		SelectedPrefix:      f.SelectedPrefix.Copy(),
+		UnselectedOption:    f.UnselectedOption.Copy(),
+		UnselectedPrefix:    f.UnselectedPrefix.Copy(),
+		FocusedButton:       f.FocusedButton.Copy(),
+		BlurredButton:       f.BlurredButton.Copy(),
+		TextInput:           copyTextStyles(f.TextInput),
+		Card:                f.Card.Copy(),
+		NoteTitle:           f.NoteTitle.Copy(),
+		Next:                f.Next.Copy(),
+	}
+}
+
+func getHuhTheme(m Model) *huh.Theme {
+	var t huh.Theme
+
+	t.FieldSeparator = m.renderer.NewStyle().SetString("\n\n")
+
+	t.FieldSeparator = m.renderer.NewStyle().SetString("\n\n")
+
+	f := &t.Focused
+	f.Base = m.renderer.NewStyle().
+		PaddingLeft(1).
+		BorderStyle(lipgloss.ThickBorder()).
+		BorderLeft(true).
+		BorderForeground(m.theme.primary)
+	f.Title = m.renderer.NewStyle().Foreground(m.theme.primary)
+	f.TextInput.Cursor = m.renderer.NewStyle().Foreground(m.theme.primary)
+	f.TextInput.Placeholder = m.renderer.NewStyle().Foreground(m.theme.foregroundMuted)
+	f.TextInput.Prompt = m.renderer.NewStyle().Foreground(m.theme.foreground)
+	f.TextInput.Text = m.renderer.NewStyle().Foreground(m.theme.foreground)
+	f.ErrorIndicator = m.renderer.NewStyle().Foreground(lipgloss.Color("FF0000"))
+	f.ErrorMessage = m.renderer.NewStyle().Foreground(lipgloss.Color("FF0000"))
+	// t.Help = help.New().Styles
+
+	t.Blurred = copyFieldStyles(*f)
+	t.Blurred.Base = t.Blurred.Base.BorderForeground(m.theme.foregroundMuted)
+	t.Blurred.Title.Foreground(m.theme.foregroundMuted)
+
+	return &t
 }
 
 func NewModel(renderer *lipgloss.Renderer) Model {
@@ -88,34 +132,53 @@ func NewModel(renderer *lipgloss.Renderer) Model {
 			foregroundMuted: lipgloss.Color("244"),
 			primary:         lipgloss.Color("#FF5C00"),
 			secondary:       lipgloss.Color("45"),
-			border:          borders[currentBorder],
 		},
-		nameInput:      textinput.New(),
-		emailInput:     textinput.New(),
-		messageInput:   textarea.New(),
-		contactMessage: "",
+		isFormSubmitted: false,
 	}
 
-	model.nameInput.Placeholder = "Your Name"
-	model.nameInput.Width = 40
-	model.emailInput.Placeholder = "Your Email"
-	model.emailInput.Width = 40
-	model.messageInput.Placeholder = "Your Message"
-	model.messageInput.SetWidth(60)
-	model.messageInput.SetHeight(5)
-	model.messageInput.ShowLineNumbers = false
-
-	model.messageInput.FocusedStyle.Base = lipgloss.NewStyle().
-		Foreground(model.theme.foreground).
-		Background(lipgloss.Color("none"))
-
-	model.messageInput.FocusedStyle.CursorLine = lipgloss.NewStyle().
-		Background(lipgloss.Color("none")).
-		Foreground(model.theme.foreground)
-
-	model.messageInput.BlurredStyle.Base = lipgloss.NewStyle().
-		Foreground(model.theme.foreground).
-		Background(lipgloss.Color("none"))
+	model.contactForm = huh.NewForm(
+		huh.NewGroup(
+			huh.NewInput().
+				Key("name").
+				Title("Name").
+				Validate(func(s string) error {
+					if s == "" {
+						return errors.New("Name cannot be empty")
+					}
+					if len(s) < 3 {
+						return errors.New("Name must be at least 3 characters long")
+					}
+					return nil
+				}),
+			huh.NewInput().
+				Key("email").
+				Title("Email").
+				Placeholder("Your Email").
+				Validate(func(s string) error {
+					if s == "" {
+						return errors.New("Email cannot be empty")
+					}
+					if !isValidEmail(s) {
+						return errors.New("Invalid email format")
+					}
+					return nil
+				}),
+			huh.NewText().
+				Key("message").
+				Title("Message").
+				Placeholder("Your Message").
+				Lines(4).
+				Validate(func(s string) error {
+					if s == "" {
+						return errors.New("Message cannot be empty")
+					}
+					if len(s) < 3 {
+						return errors.New("Message must be at least 10 characters long")
+					}
+					return nil
+				}),
+		),
+	).WithTheme(getHuhTheme(model)).WithShowHelp(false)
 
 	return model
 }
@@ -125,12 +188,7 @@ func (m Model) Init() tea.Cmd {
 }
 
 func (m *Model) OnContactActive() {
-	m.nameInput.SetValue("")
-	m.nameInput.Focus()
-	m.emailInput.SetValue("")
-	m.emailInput.Blur()
-	m.messageInput.SetValue("")
-	m.messageInput.Blur()
+
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -138,15 +196,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmd  tea.Cmd
 		cmds []tea.Cmd
 	)
-
-	m.nameInput, cmd = m.nameInput.Update(msg)
-	cmds = append(cmds, cmd)
-
-	m.emailInput, cmd = m.emailInput.Update(msg)
-	cmds = append(cmds, cmd)
-
-	m.messageInput, cmd = m.messageInput.Update(msg)
-	cmds = append(cmds, cmd)
 
 	switch msg := msg.(type) {
 	case tickMsg:
@@ -166,14 +215,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.currentView != contactView {
 				return m, tea.Quit
 			}
-			if !m.nameInput.Focused() && !m.emailInput.Focused() && !m.messageInput.Focused() {
-				return m, tea.Quit
-			}
 		case "right":
 			if m.currentView < contactView {
 				m.currentView++
 				if m.currentView == contactView {
-					m.OnContactActive()
+					// m.OnContactActive()
+					cmds = append(cmds, m.contactForm.Init())
 				}
 				m.scrollOffset = 0
 			}
@@ -181,52 +228,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.currentView > homeView {
 				m.currentView--
 				if m.currentView == contactView {
-					m.OnContactActive()
+					// m.OnContactActive()
+					cmds = append(cmds, m.contactForm.Init())
 				}
 				m.scrollOffset = 0
-			}
-		case "tab":
-			if m.currentView == contactView {
-				if m.nameInput.Focused() {
-					m.nameInput.Blur()
-					m.emailInput.Focus()
-				} else if m.emailInput.Focused() {
-					m.emailInput.Blur()
-					m.messageInput.Focus()
-				} else if m.messageInput.Focused() {
-					m.messageInput.Blur()
-					m.isSubmitFocused = true
-				} else if m.isSubmitFocused {
-					m.isSubmitFocused = false
-					m.nameInput.Focus()
-				}
-			}
-		case "enter":
-			if m.currentView == contactView {
-				if (!m.isSubmitting || m.isSubmitted) && m.isSubmitFocused {
-					m.contactMessage = ""
-					m.isSubmitted = false
-					name := m.nameInput.Value()
-					email := m.emailInput.Value()
-					message := m.messageInput.Value()
-
-					if len(name) < 1 || len(email) < 1 || len(message) < 1 {
-						m.contactMessage = "Please fill all fields"
-					} else if !isValidEmail(email) {
-						m.contactMessage = "Please enter a valid email"
-					} else {
-						isSuccess := submitForm(email, name, message)
-						if isSuccess {
-							m.contactMessage = "Message sent successfully"
-						} else {
-							m.contactMessage = "Something went wrong"
-						}
-						m.isSubmitted = true
-						m.nameInput.SetValue("")
-						m.emailInput.SetValue("")
-						m.messageInput.SetValue("")
-					}
-				}
 			}
 		case "up":
 			if (m.currentView == aboutView || m.currentView == projectsView) && m.scrollOffset > 0 {
@@ -236,13 +241,26 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if (m.currentView == aboutView || m.currentView == projectsView) && m.scrollOffset < scrollViewTotalLines-scrollViewUsableHeight {
 				m.scrollOffset++
 			}
-		case "b":
-			currentBorder = (currentBorder + 1) % len(borders)
-			m.theme.border = borders[currentBorder]
 		}
 	case tea.WindowSizeMsg:
 		m.height = msg.Height
 		m.width = msg.Width
 	}
+
+	form, cmd := m.contactForm.Update(msg)
+	if f, ok := form.(*huh.Form); ok {
+		m.contactForm = f
+	}
+	cmds = append(cmds, cmd)
+
+	if m.contactForm.State == huh.StateCompleted && !m.isFormSubmitted {
+		name := m.contactForm.Get("name").(string)
+		email := m.contactForm.Get("email").(string)
+		message := m.contactForm.Get("message").(string)
+
+		go submitForm(email, name, message)
+		m.isFormSubmitted = true
+	}
+
 	return m, tea.Batch(cmds...)
 }

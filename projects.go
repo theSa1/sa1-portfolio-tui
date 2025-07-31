@@ -9,7 +9,6 @@ import (
 type Project struct {
 	name        string
 	description string
-	languages   []string
 	tools       []string
 }
 

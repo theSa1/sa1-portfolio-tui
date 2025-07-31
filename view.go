@@ -36,7 +36,7 @@ func (m Model) View() string {
 		Width(width).
 		Height(height).
 		Align(lipgloss.Center).
-		BorderStyle(m.theme.border)
+		BorderStyle(lipgloss.RoundedBorder())
 
 	var content string
 	switch m.currentView {
