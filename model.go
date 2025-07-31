@@ -107,14 +107,13 @@ func getHuhTheme(m Model) *huh.Theme {
 		BorderStyle(lipgloss.ThickBorder()).
 		BorderLeft(true).
 		BorderForeground(m.theme.primary)
-	f.Title = m.renderer.NewStyle().Foreground(m.theme.primary)
+	f.Title = m.renderer.NewStyle().Bold(true)
 	f.TextInput.Cursor = m.renderer.NewStyle().Foreground(m.theme.primary)
 	f.TextInput.Placeholder = m.renderer.NewStyle().Foreground(m.theme.foregroundMuted)
 	f.TextInput.Prompt = m.renderer.NewStyle().Foreground(m.theme.foreground)
 	f.TextInput.Text = m.renderer.NewStyle().Foreground(m.theme.foreground)
-	f.ErrorIndicator = m.renderer.NewStyle().Foreground(lipgloss.Color("FF0000"))
-	f.ErrorMessage = m.renderer.NewStyle().Foreground(lipgloss.Color("FF0000"))
-	// t.Help = help.New().Styles
+	f.ErrorIndicator = m.renderer.NewStyle().Foreground(m.theme.primary)
+	f.ErrorMessage = m.renderer.NewStyle().Foreground(m.theme.primary)
 
 	t.Blurred = copyFieldStyles(*f)
 	t.Blurred.Base = t.Blurred.Base.BorderForeground(m.theme.foregroundMuted)
@@ -140,7 +139,7 @@ func NewModel(renderer *lipgloss.Renderer) Model {
 		huh.NewGroup(
 			huh.NewInput().
 				Key("name").
-				Title("Name").
+				Title("Name:").
 				Validate(func(s string) error {
 					if s == "" {
 						return errors.New("Name cannot be empty")
@@ -152,7 +151,7 @@ func NewModel(renderer *lipgloss.Renderer) Model {
 				}),
 			huh.NewInput().
 				Key("email").
-				Title("Email").
+				Title("Email:").
 				Placeholder("Your Email").
 				Validate(func(s string) error {
 					if s == "" {
@@ -165,7 +164,7 @@ func NewModel(renderer *lipgloss.Renderer) Model {
 				}),
 			huh.NewText().
 				Key("message").
-				Title("Message").
+				Title("Message:").
 				Placeholder("Your Message").
 				Lines(4).
 				Validate(func(s string) error {
